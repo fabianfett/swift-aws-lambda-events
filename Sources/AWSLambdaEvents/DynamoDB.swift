@@ -304,39 +304,38 @@ extension DynamoDBEvent.AttributeValue: Equatable {
 
 extension DynamoDBEvent {
     public struct Decoder {
-        @usableFromInline var userInfo: [CodingUserInfoKey: Any] = [:]
+        var userInfo: [CodingUserInfoKey: Any] = [:]
 
         public init() {}
 
-        @inlinable public func decode<T: Decodable>(_ type: T.Type, from image: [String: AttributeValue])
+        public func decode<T: Decodable>(_ type: T.Type, from image: [String: AttributeValue])
             throws -> T {
             try self.decode(type, from: .map(image))
         }
 
-        @inlinable public func decode<T: Decodable>(_ type: T.Type, from value: AttributeValue)
-            throws -> T {
+        public func decode<T: Decodable>(_ type: T.Type, from value: AttributeValue) throws -> T {
             let decoder = _DecoderImpl(userInfo: userInfo, from: value, codingPath: [])
             return try decoder.decode(T.self)
         }
     }
 
-    @usableFromInline internal struct _DecoderImpl: Swift.Decoder {
-        @usableFromInline let codingPath: [CodingKey]
-        @usableFromInline let userInfo: [CodingUserInfoKey: Any]
+    internal struct _DecoderImpl: Swift.Decoder {
+        let codingPath: [CodingKey]
+        let userInfo: [CodingUserInfoKey: Any]
 
-        @usableFromInline let value: AttributeValue
+        let value: AttributeValue
 
-        @inlinable init(userInfo: [CodingUserInfoKey: Any], from value: AttributeValue, codingPath: [CodingKey]) {
+        init(userInfo: [CodingUserInfoKey: Any], from value: AttributeValue, codingPath: [CodingKey]) {
             self.userInfo = userInfo
             self.codingPath = codingPath
             self.value = value
         }
 
-        @inlinable public func decode<T: Decodable>(_: T.Type) throws -> T {
+        public func decode<T: Decodable>(_: T.Type) throws -> T {
             try T(from: self)
         }
 
-        @usableFromInline func container<Key>(keyedBy type: Key.Type) throws ->
+        func container<Key>(keyedBy type: Key.Type) throws ->
             KeyedDecodingContainer<Key> where Key: CodingKey {
             guard case .map(let dictionary) = self.value else {
                 throw DecodingError.typeMismatch([String: AttributeValue].self, DecodingError.Context(
@@ -353,7 +352,7 @@ extension DynamoDBEvent {
             return KeyedDecodingContainer(container)
         }
 
-        @usableFromInline func unkeyedContainer() throws -> UnkeyedDecodingContainer {
+        func unkeyedContainer() throws -> UnkeyedDecodingContainer {
             guard case .list(let array) = self.value else {
                 throw DecodingError.typeMismatch([AttributeValue].self, DecodingError.Context(
                     codingPath: self.codingPath,
@@ -368,7 +367,7 @@ extension DynamoDBEvent {
             )
         }
 
-        @usableFromInline func singleValueContainer() throws -> SingleValueDecodingContainer {
+        func singleValueContainer() throws -> SingleValueDecodingContainer {
             _SingleValueDecodingContainter(
                 impl: self,
                 codingPath: self.codingPath,
